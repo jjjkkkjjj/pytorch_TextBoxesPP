@@ -1,0 +1,3 @@
+[submodule "coco-text"]
+	path = coco-text
+	url = git@github.com:bgshih/coco-text.git
