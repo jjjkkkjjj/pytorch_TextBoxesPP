@@ -7,7 +7,7 @@ The implementation of [TextBoxes++](https://arxiv.org/abs/1801.02765) with PyTor
 # Requirement
 
 ```bash
-pip install git+https://github.com/jjjkkkjjj/pytorch_SSD.git
+pip install --upgrade git+https://github.com/jjjkkkjjj/pytorch_SSD.git
 ```
 
 
