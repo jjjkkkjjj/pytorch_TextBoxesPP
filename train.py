@@ -1,4 +1,4 @@
-from data import datasets
+from text_data import datasets
 
 from ssd.models.ssd300 import SSD300
 from ssd.train import *
@@ -25,4 +25,7 @@ if __name__ == '__main__':
          target_transforms.ToTensor()]
     )
     """
-    train_dataset = datasets.COCOTextSingleDatasetBase(ignore=None, transform=None, target_transform=None, augmentation=None)
+    train_dataset = datasets.COCO2014Text_Dataset(ignore=None, transform=None, target_transform=None, augmentation=None)
+    train_dataset[1]
+    train_dataset[100]
+    train_dataset[150]
