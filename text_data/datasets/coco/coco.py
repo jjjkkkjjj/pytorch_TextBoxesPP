@@ -98,6 +98,7 @@ class COCOTextSingleDatasetBase(TextDetectionDatasetBase):
         bboxes = []
         flags = []
         texts = []
+        quads = []
 
         # anno_ids is list
         _imgid = self._coco.loadImgs(self._imageids[index])[0]['id']
@@ -108,7 +109,7 @@ class COCOTextSingleDatasetBase(TextDetectionDatasetBase):
         for anno in annos:
             """
             anno's  keys are;
-                polygon: list of float
+                polygon: list of float, whose length must be 8=
                 language: str
                 area: float
                 id: int
@@ -126,6 +127,12 @@ class COCOTextSingleDatasetBase(TextDetectionDatasetBase):
             xmax, ymax = xmin + w, ymin + h
             bboxes.append([xmin, ymin, xmax, ymax])
 
+            #print(len(anno['polygon']))
+            assert len(anno['polygon']) == 8, 'Invalid polygon length, must be 8, but got {}'.format(len(anno['polygon']))
+            x_tl, y_tl, x_tr, y_tr, x_br, y_br, x_bl, y_bl = anno['polygon']
+            quads.append([x_tl, y_tl, x_tr, y_tr,
+                          x_br, y_br, x_bl, y_bl])
+
             flags += [{'illegible': anno['legibility'] == 'illegible'}]
 
             try:
@@ -139,7 +146,7 @@ class COCOTextSingleDatasetBase(TextDetectionDatasetBase):
                 texts += [anno['utf8_string']]
             """
 
-        return np.array(bboxes, dtype=np.float32), np.array(linds, dtype=np.float32), flags, texts
+        return np.array(bboxes, dtype=np.float32), np.array(linds, dtype=np.float32), flags, np.array(quads, dtype=np.float32), texts
 
 
 class COCO2014Text_Dataset(COCOTextSingleDatasetBase):

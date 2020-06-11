@@ -1,3 +1,13 @@
+# ignore specific files
+# torch weights file
+*.pth
+*.caffemodel
+
+
+weights/checkpoints/*
+!weights/checkpoints/.gitkeep
+weights/results/*
+!weights/results/.gitkeep
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,pycharm+all,visualstudiocode,jupyternotebooks,macos,linux
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,pycharm+all,visualstudiocode,jupyternotebooks,macos,linux
