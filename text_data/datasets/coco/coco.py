@@ -5,8 +5,8 @@ from ..base import TextDetectionDatasetBase
 
 from ssd_data._utils import DATA_ROOT, _check_ins
 
-COCO_class_labels = ['text']
-COCO_class_nums = len(COCO_class_labels)
+COCOText_class_labels = ['text']
+COCOText_class_nums = len(COCOText_class_labels)
 
 class COCOTextSingleDatasetBase(TextDetectionDatasetBase):
     def __init__(self, coco_dir, focus, datasetTypes, ignore=None, transform=None, target_transform=None, augmentation=None):
@@ -27,7 +27,7 @@ class COCOTextSingleDatasetBase(TextDetectionDatasetBase):
         self._coco_dir = coco_dir
         self._focus = focus
 
-        self._class_labels = COCO_class_labels
+        self._class_labels = COCOText_class_labels
 
         self._annopath = os.path.join(self._coco_dir, 'annotations', self._focus + '.json')
         if os.path.exists(self._annopath):

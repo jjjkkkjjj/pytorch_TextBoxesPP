@@ -18,7 +18,7 @@ class TextDetectionDatasetBase(ObjectDetectionDatasetBase):
         img = self._get_image(index)
         bboxes, linds, flags, texts = self._get_target(index)
 
-        img, bboxes, linds, flags = self.apply_transform(img, bboxes, linds, flags)
+        img, bboxes, linds, flags, texts = self.apply_transform(img, bboxes, linds, flags, texts)
 
         # concatenate bboxes and linds
         if isinstance(bboxes, torch.Tensor) and isinstance(linds, torch.Tensor):
