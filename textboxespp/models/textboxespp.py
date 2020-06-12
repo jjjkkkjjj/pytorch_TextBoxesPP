@@ -70,7 +70,9 @@ class TextBoxesPP(SSDvggBase):
 
         _dbox_num_per_fpixel = [len(aspect_ratio) * 2 for aspect_ratio in self.aspect_ratios]
         # loc
-        out_channels = tuple(dbox_num * 2 * 4 for dbox_num in _dbox_num_per_fpixel)
+        # dbox_num * 2=(original and "with vertical offset") * 12(=cx,cy,w,h,x1,y1,x2,y2,...)
+        # note that the reason of multiplying 2 of dbox_num *2 is for default boxes with vertical offset
+        out_channels = tuple(dbox_num * 2 * 12 for dbox_num in _dbox_num_per_fpixel)
         localization_layers = [
             *Conv2d.block('_loc', len(_dbox_num_per_fpixel), in_channels, out_channels, kernel_size=(3, 5),
                           padding=(1, 2), batch_norm=False)
@@ -78,7 +80,9 @@ class TextBoxesPP(SSDvggBase):
         self.localization_layers = nn.ModuleDict(OrderedDict(localization_layers))
 
         # conf
-        out_channels = tuple(dbox_num * 2 for dbox_num in _dbox_num_per_fpixel)
+        # dbox_num * 2=(original and "with vertical offset") * 2(=text or background)
+        # note that the reason of multiplying 2 of dbox_num *2 is for default boxes with vertical offset
+        out_channels = tuple(dbox_num * 2 * 2 for dbox_num in _dbox_num_per_fpixel)
         confidence_layers = [
             *Conv2d.block('_conf', len(_dbox_num_per_fpixel), in_channels, out_channels, kernel_size=(3, 5),
                           padding=(1, 2), batch_norm=False)

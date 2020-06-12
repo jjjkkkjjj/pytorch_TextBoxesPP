@@ -29,9 +29,8 @@ if __name__ == '__main__':
 
     train_dataset = datasets.COCO2014Text_Dataset(ignore=target_transforms.Ignore(illegible=True), transform=transform, target_transform=target_transform, augmentation=None)
     train_dataset[1]
-    """
+
     k = TextBoxesPP()
     aa = k.state_dict()
     a = torch.load('./weights/model_icdar15.pth')
     k=0
-    """
