@@ -1,7 +1,10 @@
 from ssd.models.base import *
+from ..core.boxes.dbox import DBoxTextBoxOriginal
+from ..core.boxes.codec import TextBoxCodec
+from ..core.predictor import TextBoxPredictor
 
 class TextBoxesPP(SSDvggBase):
-    def __init__(self, input_shape=(1024, 1024, 3),
+    def __init__(self, input_shape=(384, 384, 3),
                  val_config=SSDValConfig(val_conf_threshold=0.01, vis_conf_threshold=0.6, iou_threshold=0.45, topk=200)):
         """
         :param input_shape:
@@ -14,7 +17,12 @@ class TextBoxesPP(SSDvggBase):
                                       'convRL4_3', 'convRL7', 'convRL8_2', 'convRL9_2', 'convRL10_2', 'convRL11_2'),
                                       addon_source_names=('convRL4_3',),
 
-                                      codec_means=(0.0, 0.0, 0.0, 0.0), codec_stds=(0.1, 0.1, 0.2, 0.2),
+                                      codec_means=(0.0, 0.0, 0.0, 0.0,
+                                                   0.0, 0.0, 0.0, 0.0,
+                                                   0.0, 0.0, 0.0, 0.0),
+                                      codec_stds=(0.1, 0.1, 0.2, 0.2,
+                                                  0.1, 0.1, 0.1, 0.1,
+                                                  0.1, 0.1, 0.1, 0.1),
                                       rgb_means=(0.485, 0.456, 0.406), rgb_stds=(0.229, 0.224, 0.225))
 
         ### layers ###
@@ -54,9 +62,13 @@ class TextBoxesPP(SSDvggBase):
         vgg_layers = nn.ModuleDict(vgg_layers)
         extra_layers = nn.ModuleDict(extra_layers)
 
-        super().__init__(train_config, val_config, defaultBox=DBoxSSDOriginal(img_shape=input_shape,
-                                                                              scale_conv4_3=0.1, scale_range=(0.2, 0.9),
-                                                                              aspect_ratios=train_config.aspect_ratios),
+        super().__init__(train_config, val_config, defaultBox=DBoxTextBoxOriginal(img_shape=input_shape,
+                                                                                  scale_conv4_3=0.1, scale_range=(0.2, 0.9),
+                                                                                  aspect_ratios=train_config.aspect_ratios),
+
+                         codec=TextBoxCodec(norm_means=train_config.codec_means, norm_stds=train_config.codec_stds),
+                         predictor=TextBoxPredictor(2),
+
                          vgg_layers=vgg_layers, extra_layers=extra_layers)
 
     def build_classifier(self, **kwargs):
@@ -88,3 +100,9 @@ class TextBoxesPP(SSDvggBase):
                           padding=(1, 2), batch_norm=False)
         ]
         self.confidence_layers = nn.ModuleDict(OrderedDict(confidence_layers))
+
+    def load_vgg_weights(self):
+        if self.batch_norm:
+            load_vgg_weights(self, 'vgg16_bn')
+        else:
+            load_vgg_weights(self, 'vgg16')
