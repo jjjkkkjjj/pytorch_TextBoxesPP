@@ -4,7 +4,7 @@ from ..core.boxes.codec import TextBoxCodec
 from ..core.predictor import TextBoxPredictor
 
 class TextBoxesPP(SSDvggBase):
-    def __init__(self, input_shape=(384, 384, 3),
+    def __init__(self, input_shape=(768, 768, 3),
                  val_config=SSDValConfig(val_conf_threshold=0.01, vis_conf_threshold=0.6, iou_threshold=0.45, topk=200)):
         """
         :param input_shape:

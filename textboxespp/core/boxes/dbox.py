@@ -2,6 +2,16 @@ from ssd.core.boxes.dbox import *
 
 class DBoxTextBoxOriginal(DBoxSSDOriginal):
 
+    def build(self, feature_layers, classifier_source_names, localization_layers):
+        super().build(feature_layers, classifier_source_names, localization_layers)
+
+        self.dbox_num_per_fmap = [num*2 for num in self.dbox_num_per_fmap]
+        return self
+
+    @property
+    def dbox_num_per_fpixel(self):
+        return [len(aspect_ratio)*2*2 for aspect_ratio in self.aspect_ratios]
+
     def forward(self):
         dboxes = []
 

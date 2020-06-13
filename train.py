@@ -30,14 +30,13 @@ if __name__ == '__main__':
     )
 
     train_dataset = datasets.COCO2014Text_Dataset(ignore=target_transforms.Ignore(illegible=True), transform=transform, target_transform=target_transform, augmentation=None)
-    """
-    train_dataset[1]
+
 
     k = TextBoxesPP()
     aa = k.state_dict()
     a = torch.load('./weights/model_icdar15.pth')
     k=0
-    """
+
 
     train_loader = DataLoader(train_dataset,
                               batch_size=8,
@@ -47,7 +46,9 @@ if __name__ == '__main__':
                               pin_memory=True)
 
     model = TextBoxesPP().cuda()
-    model.load_vgg_weights()
+    print(model)
+    #model.load_vgg_weights()
+    #model.load_weights('./weights/model_icdar15.pth')
 
     optimizer = Adam(model.parameters(), lr=1e-4, weight_decay=5e-4)
     # iter_sheduler = SSDIterMultiStepLR(optimizer, milestones=(10, 20, 30), gamma=0.1, verbose=True)
