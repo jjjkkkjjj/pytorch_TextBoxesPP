@@ -132,8 +132,21 @@ def annotationGenerator(basedir, imagedirname='SynthText', skip_missing=False, e
         depthET = etree.SubElement(sizeET, 'depth')
         depthET.text = str(c)
 
-        wordBB_num = txts.size
-        for b in range(wordBB_num):
+        # convert txts to list of str
+        # I don't know why txts is
+        # ['Lines:\nI lost\nKevin ', 'will                ', 'line\nand            ',
+        # 'and\nthe             ', '(and                ', 'the\nout             ',
+        # 'you                 ', "don't\n pkg          "]
+        # there is strange blank and the length of txts is different from the one of wBB
+        txts = ' '.join(txts.tolist()).split()
+        text_num = len(txts)
+
+        if wBB.ndim == 2:
+            # convert shape=(2, 4,) to (2, 4, 1)
+            wBB = np.expand_dims(wBB, 2)
+
+        assert text_num == wBB.shape[2], 'The length of text and wordBB must be same, but got {} and {}'.format(text_num, wBB.shape[2])
+        for b in range(text_num):
             # object
             objectET = etree.SubElement(root, 'object')
 
@@ -148,9 +161,6 @@ def annotationGenerator(basedir, imagedirname='SynthText', skip_missing=False, e
             nameET.text = txts[b]
             # bndbox
             bndboxET = etree.SubElement(objectET, 'bndbox')
-
-            if wBB.ndim == 2:
-                wBB = np.expand_dims(wBB, 2)
 
             # quad
             for q in range(4):
@@ -182,4 +192,5 @@ def annotationGenerator(basedir, imagedirname='SynthText', skip_missing=False, e
         sys.stdout.write('\rGenerating... {:0.1f}% ({}/{})'.format(100*(float(i + 1)/image_num), i+1, image_num))
         sys.stdout.flush()
 
-    logging.info('\nFinished!!!')
+    print()
+    logging.info('Finished!!!')
