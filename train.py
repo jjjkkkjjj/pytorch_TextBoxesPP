@@ -1,5 +1,5 @@
 from text_data import datasets, target_transforms, transforms
-from ssd_data.utils import batch_ind_fn
+from text_data.utils import batch_ind_fn_droptexts
 
 from textboxespp.models.textboxespp import TextBoxesPP
 from ssd.train import *
@@ -29,8 +29,8 @@ if __name__ == '__main__':
          target_transforms.ToTensor()]
     )
 
-    train_dataset = datasets.COCO2014Text_Dataset(ignore=target_transforms.Ignore(illegible=True), transform=transform, target_transform=target_transform, augmentation=None)
-
+    #train_dataset = datasets.COCO2014Text_Dataset(ignore=target_transforms.Ignore(illegible=True), transform=transform, target_transform=target_transform, augmentation=None)
+    train_dataset = datasets.SynthTextDataset(ignore=None, transform=transform, arget_transform=target_transform, augmentation=None)
 
     k = TextBoxesPP()
     aa = k.state_dict()
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     train_loader = DataLoader(train_dataset,
                               batch_size=8,
                               shuffle=True,
-                              collate_fn=batch_ind_fn,
+                              collate_fn=batch_ind_fn_droptexts,
                               num_workers=4,
                               pin_memory=True)
 

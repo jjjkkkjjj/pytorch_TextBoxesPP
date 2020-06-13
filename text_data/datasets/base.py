@@ -30,8 +30,8 @@ class TextDetectionDatasetBase(ObjectDetectionDatasetBase):
                 linds = linds[:, np.newaxis]
             targets = np.concatenate((bboxes, quads, linds), axis=1)
 
-        #return img, (targets, texts)
-        return img, targets
+        return img, targets, texts
+        #return img, targets
 
     def apply_transform(self, img, bboxes, linds, flags, *args):
         height, width, channel = img.shape

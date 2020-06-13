@@ -5,7 +5,7 @@ from ssd_data._utils import _check_ins
 from ssd_data.target_transforms import *
 
 class Ignore(_Ignore):
-    supported_key = ['illegible']
+    supported_key = ['illegible', 'difficult']
 
     def __init__(self, **kwargs):
         """
