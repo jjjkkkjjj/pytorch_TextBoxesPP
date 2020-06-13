@@ -8,6 +8,7 @@ The implementation of [TextBoxes++](https://arxiv.org/abs/1801.02765) with PyTor
 
 ```bash
 pip install --upgrade git+https://github.com/jjjkkkjjj/pytorch_SSD.git
+conda install lxml
 ```
 
 
