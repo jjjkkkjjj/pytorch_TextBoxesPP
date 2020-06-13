@@ -1,5 +1,6 @@
 import torch
-from ssd.core.boxes.utils import centroids2corners, iou
+import numpy as np
+from ssd.core.boxes.utils import centroids2corners, iou, iou_numpy, corners2centroids_numpy
 
 def matching_strategy(targets, dboxes, **kwargs):
     """
@@ -78,3 +79,45 @@ def matching_strategy(targets, dboxes, **kwargs):
 
 
     return pos_indicator, matched_targets
+
+def coverage_numpy(a, b, divide_b=False):
+    """
+    :param a: Box ndarray, shape is (nums, 4)
+    :param b: Box ndarray, shape is (nums, 4)
+    IMPORTANT: Note that 4 means (xmin, ymin, xmax, ymax)
+    :param divide_b: bool, if true, |a ^ b| / |b|, otherwise, |a ^ b| / |a|
+    :return:
+        iou: ndarray, shape is (a_num, b_num)
+             formula is
+             iou = intersection / union = intersection / (A + B - intersection)
+    """
+
+    # get intersection's xmin, ymin, xmax, ymax
+    # xmin = max(a_xmin, b_xmin)
+    # ymin = max(a_ymin, b_ymin)
+    # xmax = min(a_xmax, b_xmax)
+    # ymax = min(a_ymax, b_ymax)
+
+    # convert for broadcast
+    # a's shape = (a_num, 1, 4), b's shape = (1, b_num, 4)
+    a, b = np.expand_dims(a, 1), np.expand_dims(b, 0)
+    intersection = np.concatenate((np.expand_dims(np.maximum(a[:, :, 0], b[:, :, 0]), 2),
+                                   np.expand_dims(np.maximum(a[:, :, 1], b[:, :, 1]), 2),
+                                   np.expand_dims(np.minimum(a[:, :, 2], b[:, :, 2]), 2),
+                                   np.expand_dims(np.minimum(a[:, :, 3], b[:, :, 3]), 2)), axis=2)
+    # get intersection's area
+    # (w, h) = (xmax - xmin, ymax - ymin)
+    intersection_w, intersection_h = intersection[:, :, 2] - intersection[:, :, 0], intersection[:, :, 3] - intersection[:, :, 1]
+    # if intersection's width or height is negative, those will be converted to zero
+    intersection_w, intersection_h = np.clip(intersection_w, a_min=0, a_max=None), np.clip(intersection_h, a_min=0, a_max=None)
+
+    intersectionArea = intersection_w * intersection_h
+
+    # get a and b's area
+    # area = (xmax - xmin) * (ymax - ymin)
+    if divide_b:
+        B = (b[:, :, 2] - b[:, :, 0]) * (b[:, :, 3] - b[:, :, 1])
+        return intersectionArea / B
+    else:
+        A = (a[:, :, 2] - a[:, :, 0]) * (a[:, :, 3] - a[:, :, 1])
+        return intersectionArea / A

@@ -26,6 +26,7 @@ class DBoxTextBoxOriginal(DBoxSSDOriginal):
         ars = self.aspect_ratios[0]
         defaultboxes = self._make(fmap_w, fmap_h, scale_k, scale_k_plus, ars)[0]
         # get offset
+        # ref: https://github.com/MhLiao/TextBoxes_plusplus/blob/master/src/caffe/layers/prior_box_layer.cpp
         offset = (1.0 / fmap_h) / 2.0
         # create default boxes with vertical offset
         defaultboxes = np.repeat(defaultboxes, 2, axis=0)
