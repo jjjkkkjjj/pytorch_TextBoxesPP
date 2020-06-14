@@ -130,7 +130,7 @@ class TextBoxDecoder(DecoderBase):
         """
         predicts_locations = predicts[:, :, :12]
 
-        assert predicts_locations.shape[1:] == default_boxes.shape, "predicts and default_boxes must be same shape"
+        assert predicts_locations.shape[1] == default_boxes.shape[0], "predicts and default_boxes must be same number"
 
         pred_unnormalized = predicts_locations * self.norm_stds + self.norm_means
         pred_loc, pred_quad = pred_unnormalized[:, :, :4], pred_unnormalized[:, :, 4:12]

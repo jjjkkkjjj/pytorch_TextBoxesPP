@@ -1,11 +1,20 @@
 from ssd.models.base import *
+from ssd._utils import _check_ins
 from ..core.boxes.dbox import DBoxTextBoxOriginal
 from ..core.boxes.codec import TextBoxCodec
 from ..core.predictor import TextBoxPredictor
+from ..core.inference import InferenceBox, textbox_non_maximum_suppression
+from ..core.inference import toVisualizeInfQuadsRGBimg
+
+class TextBoxesPPValConfig(SSDValConfig):
+    def __init__(self, **kwargs):
+        self.iou_threshold2 = _check_ins('iou_threshold2', kwargs.get('iou_threshold2', 0.2), float)
+        super().__init__(**kwargs)
 
 class TextBoxesPP(SSDvggBase):
     def __init__(self, input_shape=(768, 768, 3),
-                 val_config=SSDValConfig(val_conf_threshold=0.01, vis_conf_threshold=0.6, iou_threshold=0.45, topk=200)):
+                 val_config=TextBoxesPPValConfig(val_conf_threshold=0.01, vis_conf_threshold=0.6,
+                                                 iou_threshold=0.5, iou_threshold2=0.2, topk=200)):
         """
         :param input_shape:
         :param val_config:
@@ -68,6 +77,7 @@ class TextBoxesPP(SSDvggBase):
 
                          codec=TextBoxCodec(norm_means=train_config.codec_means, norm_stds=train_config.codec_stds),
                          predictor=TextBoxPredictor(2),
+                         inferenceBox=InferenceBox(2, filter_func=textbox_non_maximum_suppression, val_config=val_config),
 
                          vgg_layers=vgg_layers, extra_layers=extra_layers)
 
@@ -100,6 +110,54 @@ class TextBoxesPP(SSDvggBase):
                           padding=(1, 2), batch_norm=False)
         ]
         self.confidence_layers = nn.ModuleDict(OrderedDict(confidence_layers))
+
+    def infer(self, image, conf_threshold=None, toNorm=False, visualize=False):
+        """
+        :param image: ndarray or Tensor of list or tuple, or ndarray, or Tensor. Note that each type will be handled as;
+            ndarray of list or tuple, ndarray: (?, h, w, c). channel order will be handled as RGB
+            Tensor of list or tuple, Tensor: (?, c, h, w). channel order will be handled as RGB
+        :param conf_threshold: float or None, if it's None, default value will be passed
+        :param toNorm: bool, whether to normalize passed image
+        :param visualize: bool,
+        :return:
+        """
+        if not self.isBuilt:
+            raise NotImplementedError(
+                "Not initialized, implement \'build_feature\', \'build_classifier\', \'build_addon\'")
+        if self.training:
+            raise NotImplementedError("call \'eval()\' first")
+
+        # img: Tensor, shape = (b, c, h, w)
+        img = check_image(image, self.device)
+
+        # normed_img, orig_img: Tensor, shape = (b, c, h, w)
+        normed_img, orig_img = get_normed_and_origin_img(img, self.rgb_means, self.rgb_stds, toNorm, self.device)
+
+        if list(img.shape[1:]) != [self.input_channel, self.input_height, self.input_width]:
+            raise ValueError('image shape was not same as input shape: {}, but got {}'.format(
+                [self.input_channel, self.input_height, self.input_width], list(img.shape[1:])))
+
+        if conf_threshold is None:
+            conf_threshold = self.vis_conf_threshold if visualize else self.val_conf_threshold
+
+        with torch.no_grad():
+
+            # predict
+            predicts = self(normed_img)
+
+            predicts = self.decoder(predicts, self.dboxes)
+
+            # list of tensor, shape = (box num, 6=(class index, confidence, cx, cy, w, h))
+            infers = self.inferenceBox(predicts, conf_threshold)
+
+            img_num = normed_img.shape[0]
+            if visualize:
+                return infers, [toVisualizeInfQuadsRGBimg(orig_img[i], poly_pts=infers[i][:, 2:], inf_labels=infers[i][:, 0],
+                                                          inf_confs=infers[i][:, 1], classe_labels=self.class_labels,
+                                                          verbose=False) for i in range(img_num)]
+            else:
+                return infers
+
 
     def load_vgg_weights(self):
         if self.batch_norm:

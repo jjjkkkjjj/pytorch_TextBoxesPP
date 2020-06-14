@@ -1,5 +1,7 @@
 import torch
 import numpy as np
+from shapely.geometry import Polygon, MultiPoint, MultiPolygon
+import shapely
 from ssd.core.boxes.utils import centroids2corners, iou, iou_numpy, corners2centroids_numpy
 
 def matching_strategy(targets, dboxes, **kwargs):
@@ -121,3 +123,38 @@ def coverage_numpy(a, b, divide_b=False):
     else:
         A = (a[:, :, 2] - a[:, :, 0]) * (a[:, :, 3] - a[:, :, 1])
         return intersectionArea / A
+
+
+# ref: https://github.com/MhLiao/TextBoxes_plusplus/blob/master/examples/text/nms.py
+def quads_iou(a, b):
+    """
+    :param a: Box Tensor, shape is (nums, 8)
+    :param b: Box Tensor, shape is (nums, 8)
+    IMPORTANT: Note that 8 means (topleft=(x1, y1), x2, y2,..clockwise)
+    :return:
+        iou: Tensor, shape is (a_num, b_num)
+             formula is
+             iou = intersection / union
+    """
+    # convert Tensor to numpy for using shapely
+    a_numpy, b_numpy = a.cpu().numpy(), b.cpu().numpy()
+
+    a_number, b_number = a_numpy.shape[0], b_numpy.shape[0]
+    ret = np.zeros(shape=(a_number, b_number), dtype=np.float32)
+
+    a_numpy, b_numpy = a_numpy.reshape((-1, 4, 2)), b_numpy.reshape((-1, 4, 2))
+    for i in range(a_number):
+        a_polygon = Polygon(a_numpy[i]).convex_hull
+        for j in range(b_number):
+            b_polygon = Polygon(b_numpy[j]).convex_hull
+
+            if not a_polygon.intersects(b_polygon):
+                continue
+
+            intersectionArea = a_polygon.intersection(b_polygon).area
+            unionArea = MultiPoint(np.concatenate((a_numpy[i], b_numpy[j]))).convex_hull.area
+            if unionArea == 0:
+                continue
+            ret[i, j] = intersectionArea / unionArea
+
+    return torch.from_numpy(ret)
