@@ -126,7 +126,7 @@ class COCOTextSingleDatasetBase(TextDetectionDatasetBase):
                 legibility: int
                 class: int
             """
-            linds += [1]# 1 means text
+            linds += [0]# 0 means text, 1 means background
 
             # bbox = [xmin, ymin, w, h]
             xmin, ymin, w, h = anno['bbox']

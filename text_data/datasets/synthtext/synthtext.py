@@ -75,7 +75,7 @@ class SynthTextSingleDatasetBase(TextDetectionDatasetBase):
 
         root = ET.parse(self._annopaths[index]).getroot()
         for obj in root.iter('object'):
-            linds.append(1) # 1 means text
+            linds.append(0) # 0 means text, 1 means background
 
             bndbox = obj.find('bndbox')
 
