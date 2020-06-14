@@ -73,7 +73,7 @@ def matching_strategy(targets, dboxes, **kwargs):
 
         # set background flag
         neg_ind = torch.logical_not(pos_ind)
-        matched_targets[b, neg_ind, 4:] = 0
+        matched_targets[b, neg_ind, 12:] = 0
         matched_targets[b, neg_ind, -1] = 1
 
 

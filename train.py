@@ -18,13 +18,13 @@ if __name__ == '__main__':
     #augmentation = None
 
     transform = transforms.Compose(
-        [transforms.Resize((768, 768)),
+        [transforms.Resize((384, 384)),
          transforms.ToTensor(),
          transforms.Normalize(rgb_means=(0.485, 0.456, 0.406), rgb_stds=(0.229, 0.224, 0.225))]
     )
     target_transform = target_transforms.Compose(
         [target_transforms.Corners2Centroids(),
-         target_transforms.ToQuadrilateral(),
+         #target_transforms.ToQuadrilateral(),
          target_transforms.OneHot(class_nums=datasets.COCOText_class_nums, add_background=True),
          target_transforms.ToTensor()]
     )
@@ -39,15 +39,15 @@ if __name__ == '__main__':
 
 
     train_loader = DataLoader(train_dataset,
-                              batch_size=8,
+                              batch_size=32,
                               shuffle=True,
                               collate_fn=batch_ind_fn_droptexts,
                               num_workers=4,
                               pin_memory=True)
 
-    model = TextBoxesPP().cuda()
+    model = TextBoxesPP(input_shape=(384, 384, 3)).cuda()
+    model.load_vgg_weights()
     print(model)
-    #model.load_vgg_weights()
     #model.load_weights('./weights/model_icdar15.pth')
 
     optimizer = Adam(model.parameters(), lr=1e-4, weight_decay=5e-4)

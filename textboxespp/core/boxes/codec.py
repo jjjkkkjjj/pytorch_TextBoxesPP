@@ -116,10 +116,10 @@ class TextBoxDecoder(DecoderBase):
         self.norm_means = norm_means.unsqueeze(0).unsqueeze(0)
         self.norm_stds = norm_stds.unsqueeze(0).unsqueeze(0)
 
-    def forward(self, pred_boxes, default_boxes):
+    def forward(self, predicts, default_boxes):
         """
         Opposite to above procession
-        :param pred_boxes: Tensor, shape = (batch, default boxes num, 14=(4+8+2))
+        :param predicts: Tensor, shape = (batch, default boxes num, 14=(4+8+2))
         :param default_boxes: Tensor, shape = (default boxes num, 4)
         Note that 4 means (cx, cy, w, h)
         :return:
@@ -128,9 +128,11 @@ class TextBoxDecoder(DecoderBase):
                       inf_w = exp(pred_w) * dbox_w, inf_h = exp(pred_h) * dbox_h
                       shape = (batch, default boxes num, 4)
         """
-        assert pred_boxes.shape[1:] == default_boxes.shape, "pred_boxes and default_boxes must be same shape"
+        predicts_locations = predicts[:, :, :12]
 
-        pred_unnormalized = pred_boxes * self.norm_stds + self.norm_means
+        assert predicts_locations.shape[1:] == default_boxes.shape, "predicts and default_boxes must be same shape"
+
+        pred_unnormalized = predicts_locations * self.norm_stds + self.norm_means
         pred_loc, pred_quad = pred_unnormalized[:, :, :4], pred_unnormalized[:, :, 4:12]
 
         # bounding box
@@ -149,10 +151,12 @@ class TextBoxDecoder(DecoderBase):
         inf_x4 = pred_quad[:, :, 6] * default_boxes[:, 2] + default_boxes[:, 0]
         inf_y4 = pred_quad[:, :, 7] * default_boxes[:, 3] + default_boxes[:, 1]
 
-        return torch.cat((inf_cx.unsqueeze(2), inf_cy.unsqueeze(2), inf_w.unsqueeze(2), inf_h.unsqueeze(2),
-                          inf_x1.unsqueeze(2), inf_y1.unsqueeze(2), inf_x2.unsqueeze(2), inf_y2.unsqueeze(2),
-                          inf_x3.unsqueeze(2), inf_y3.unsqueeze(2), inf_x4.unsqueeze(2), inf_y4.unsqueeze(2)),
-                          dim=2)
+        predicts[:, :, :12] = torch.cat((inf_cx.unsqueeze(2), inf_cy.unsqueeze(2), inf_w.unsqueeze(2), inf_h.unsqueeze(2),
+                                         inf_x1.unsqueeze(2), inf_y1.unsqueeze(2), inf_x2.unsqueeze(2), inf_y2.unsqueeze(2),
+                                         inf_x3.unsqueeze(2), inf_y3.unsqueeze(2), inf_x4.unsqueeze(2), inf_y4.unsqueeze(2)),
+                                         dim=2)
+
+        return predicts
 
     def to(self, *args, **kwargs):
         self.norm_means = self.norm_means.to(*args, **kwargs)
