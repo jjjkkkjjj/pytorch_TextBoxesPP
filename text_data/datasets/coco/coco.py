@@ -64,6 +64,13 @@ class COCOTextSingleDatasetBase(TextDetectionDatasetBase):
     def __len__(self):
         return len(self._imageids)
 
+    @property
+    def class_nums(self):
+        return len(self._class_labels)
+    @property
+    def class_labels(self):
+        return self._class_labels
+
     def _get_image(self, index):
         """
         :param index: int

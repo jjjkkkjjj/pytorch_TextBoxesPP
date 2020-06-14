@@ -40,6 +40,13 @@ class SynthTextSingleDatasetBase(TextDetectionDatasetBase):
     def __len__(self):
         return len(self._annopaths)
 
+    @property
+    def class_nums(self):
+        return len(self._class_labels)
+    @property
+    def class_labels(self):
+        return self._class_labels
+
     def _get_image(self, index):
         """
         :param index: int
