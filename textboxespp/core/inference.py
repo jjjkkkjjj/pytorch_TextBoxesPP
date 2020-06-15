@@ -22,7 +22,7 @@ def textbox_non_maximum_suppression(pred, val_config):
     loc, quad, conf = pred[:, :4], pred[:, 4:12], pred[:, -1]
 
     indices, _, _ = non_maximum_suppression(torch.cat((loc, conf.unsqueeze(1)), dim=1), val_config)
-
+    """
     # sort confidence and default boxes with descending order
     c, conf_des_inds = conf.sort(dim=0, descending=True)
     # get topk indices
@@ -51,8 +51,8 @@ def textbox_non_maximum_suppression(pred, val_config):
         indicator = overlap.reshape((overlap.nelement())) <= iou_threshold
 
         conf_des_inds = conf_des_inds[indicator]
-
-    return inferred_boxes
+    """
+    return indices, conf[indices], torch.cat((loc[indices], quad[indices]), dim=1)
 
 
 def toVisualizeQuadsRGBimg(img, poly_pts, thickness=2, rgb=(255, 0, 0), verbose=False):
@@ -92,23 +92,30 @@ def toVisualizeQuadsRGBimg(img, poly_pts, thickness=2, rgb=(255, 0, 0), verbose=
 
     return img
 
-def toVisualizeInfQuadsRGBimg(img, poly_pts, inf_labels, classe_labels, inf_confs=None, verbose=False):
+def toVisualizeInfQuadsRGBimg(img, poly_pts, inf_labels, classe_labels, inf_confs=None, tensor2cvimg=True, verbose=False):
     """
     :param img: Tensor, shape = (c, h, w)
     :param poly_pts: list of Tensor, centered coordinates, shape = (box num, ?*2=(x1, y1, x2, y2,...)).
     :param inf_labels:
     :param classe_labels: list of str
     :param inf_confs: Tensor, (box_num,)
+    :param tensor2cvimg: bool, whether to convert Tensor to cvimg
     :param verbose: bool, whether to show information
     :return:
         img: RGB order
     """
     # convert (c, h, w) to (h, w, c)
-    img = tensor2cvrgbimg(img, to8bit=True).copy()
+    if tensor2cvimg:
+        img = tensor2cvrgbimg(img, to8bit=True).copy()
+    else:
+        if not isinstance(img, np.ndarray):
+            raise ValueError('img must be Tensor, but got {}. if you pass \'Tensor\' img, set tensor2cvimg=True'.format(type(img).__name__))
+
+
     #cv2.imshow('a', img)
     #cv2.waitKey()
     # print(locs)
-    poly_pts_mm = poly_pts.detach().numpy()
+    poly_pts_mm = poly_pts.cpu().numpy()
 
     class_num = len(classe_labels)
     box_num = poly_pts.shape[0]

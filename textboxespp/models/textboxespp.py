@@ -147,12 +147,12 @@ class TextBoxesPP(SSDvggBase):
 
             predicts = self.decoder(predicts, self.dboxes)
 
-            # list of tensor, shape = (box num, 6=(class index, confidence, cx, cy, w, h))
+            # list of tensor, shape = (box num, 14=(class index, confidence, cx, cy, w, h, 12=(x1, y1,...)))
             infers = self.inferenceBox(predicts, conf_threshold)
 
             img_num = normed_img.shape[0]
             if visualize:
-                return infers, [toVisualizeInfQuadsRGBimg(orig_img[i], poly_pts=infers[i][:, 2:], inf_labels=infers[i][:, 0],
+                return infers, [toVisualizeInfQuadsRGBimg(orig_img[i], poly_pts=infers[i][:, 6:], inf_labels=infers[i][:, 0],
                                                           inf_confs=infers[i][:, 1], classe_labels=self.class_labels,
                                                           verbose=False) for i in range(img_num)]
             else:

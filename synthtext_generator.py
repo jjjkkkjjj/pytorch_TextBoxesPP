@@ -5,7 +5,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Generate Synthtext\'s annotation xml file')
 parser.add_argument('path', help='directory path under \'SynthText\'(, \'licence.txt\')',
                     type=str)
-parser.add_argument('-in', '--image_dirname', help='image directory name including \'gt.mat\'',
+parser.add_argument('-id', '--image_dirname', help='image directory name including \'gt.mat\'',
                     type=str, default='SynthText')
 parser.add_argument('-sm', '--skip_missing', help='Wheter to skip missing image',
                     action='store_true')
