@@ -44,10 +44,10 @@ if __name__ == '__main__':
                                           verbose=False, tensor2cvimg=False)
         cv2.imshow('result', cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
         cv2.waitKey()
-    """
+
     images = [test_dataset[i][0] for i in range(20)]
     inf, ret_imgs = model.infer(images, visualize=True, toNorm=False)
     for img in ret_imgs:
         cv2.imshow('result', cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
         cv2.waitKey()
-    """
+    
