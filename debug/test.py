@@ -50,4 +50,3 @@ if __name__ == '__main__':
     for img in ret_imgs:
         cv2.imshow('result', cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
         cv2.waitKey()
-    
