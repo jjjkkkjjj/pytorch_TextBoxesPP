@@ -37,7 +37,7 @@ if __name__ == '__main__':
     model.eval()
 
     image = cv2.cvtColor(cv2.imread('assets/test.png'), cv2.COLOR_BGR2RGB)
-    infers, imgs = model.infer(cv2.resize(image, size), visualize=True, toNorm=True)
+    infers, imgs, orig_imgs = model.infer(cv2.resize(image, size), visualize=True, toNorm=True)
     for i, img in enumerate(imgs):
         image = toVisualizeInfQuadsRGBimg(image, poly_pts=infers[i][:, 6:], inf_labels=infers[i][:, 0],
                                           inf_confs=infers[i][:, 1], classe_labels=model.class_labels,
@@ -46,7 +46,7 @@ if __name__ == '__main__':
         cv2.waitKey()
 
     images = [test_dataset[i][0] for i in range(20)]
-    inf, ret_imgs = model.infer(images, visualize=True, toNorm=False)
+    inf, ret_imgs, orig_imgs = model.infer(images, visualize=True, toNorm=False)
     for img in ret_imgs:
         cv2.imshow('result', cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
         cv2.waitKey()

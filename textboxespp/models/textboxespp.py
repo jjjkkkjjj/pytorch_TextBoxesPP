@@ -121,42 +121,19 @@ class TextBoxesPP(SSDvggBase):
         :param visualize: bool,
         :return:
         """
-        if not self.isBuilt:
-            raise NotImplementedError(
-                "Not initialized, implement \'build_feature\', \'build_classifier\', \'build_addon\'")
-        if self.training:
-            raise NotImplementedError("call \'eval()\' first")
+        # infers: list of tensor, shape = (box num, 14=(class index, confidence, cx, cy, w, h, 12=(x1, y1,...)))
+        infers, orig_imgs = super().infer(image, conf_threshold, toNorm, visualize=False)
 
-        # img: Tensor, shape = (b, c, h, w)
-        img = check_image(image, self.device)
+        if visualize:
+            img_num = orig_imgs.shape[0]
 
-        # normed_img, orig_img: Tensor, shape = (b, c, h, w)
-        normed_img, orig_img = get_normed_and_origin_img(img, self.rgb_means, self.rgb_stds, toNorm, self.device)
+            visualized_imgs = [toVisualizeInfQuadsRGBimg(orig_imgs[i], poly_pts=infers[i][:, 6:], inf_labels=infers[i][:, 0],
+                                                         inf_confs=infers[i][:, 1], classe_labels=self.class_labels,
+                                                         verbose=False) for i in range(img_num)]
 
-        if list(img.shape[1:]) != [self.input_channel, self.input_height, self.input_width]:
-            raise ValueError('image shape was not same as input shape: {}, but got {}'.format(
-                [self.input_channel, self.input_height, self.input_width], list(img.shape[1:])))
-
-        if conf_threshold is None:
-            conf_threshold = self.vis_conf_threshold if visualize else self.val_conf_threshold
-
-        with torch.no_grad():
-
-            # predict
-            predicts = self(normed_img)
-
-            predicts = self.decoder(predicts, self.dboxes)
-
-            # list of tensor, shape = (box num, 14=(class index, confidence, cx, cy, w, h, 12=(x1, y1,...)))
-            infers = self.inferenceBox(predicts, conf_threshold)
-
-            img_num = normed_img.shape[0]
-            if visualize:
-                return infers, [toVisualizeInfQuadsRGBimg(orig_img[i], poly_pts=infers[i][:, 6:], inf_labels=infers[i][:, 0],
-                                                          inf_confs=infers[i][:, 1], classe_labels=self.class_labels,
-                                                          verbose=False) for i in range(img_num)]
-            else:
-                return infers
+            return infers, visualized_imgs, orig_imgs
+        else:
+            return infers, orig_imgs
 
 
     def load_vgg_weights(self):
