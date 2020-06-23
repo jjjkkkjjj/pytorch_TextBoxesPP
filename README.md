@@ -38,13 +38,32 @@ conda install -c conda-forge shapely
                           encoding
   ```
 
-- Train. see [demo/pre-train-SynthText.ipynb](demo/pre-train-SynthText.ipynb).
+- Train. See [demo/pre-train-SynthText.ipynb](demo/pre-train-SynthText.ipynb).
 
 - You can download pre-trained model from [here](https://drive.google.com/file/d/1unqLYGhbORYHHWy7UtZkHA-C-MrN19mf/view?usp=sharing).
 
-- Example;
+- Pre-trained model's output example;
 
 ![pre-trained img](assets/pre-train-result.png?raw=true "pre-trained img")
+
+# Train ICDAR2015
+
+- First, download dataset from [official](https://rrc.cvc.uab.es/?ch=4&com=downloads).
+
+- Second, place annotation `.txt` and `.jpg` like this;
+
+  ```bash
+  ├── Annotations (place .txt)
+  └── Images (place .jpg)
+  ```
+
+- Train. See [demo/train-ICDAR2015.ipynb](demo/train-ICDAR2015.ipynb).
+
+- You can download pre-trained model from [here](https://drive.google.com/file/d/1vb7xnqClTy612qay7On1K37ZyAoulxd1/view?usp=sharing).
+
+- ICDAR's model output example;
+
+![icdar-trained img](assets/train-icdar-result.png?raw=true "icdar-trained img")
 
 # Reference
 
