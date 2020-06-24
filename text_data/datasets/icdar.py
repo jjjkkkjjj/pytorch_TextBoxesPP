@@ -69,9 +69,19 @@ class ICDARTextSingleDatasetBase(TextDetectionDatasetBase):
         :return:
             rgb image(ndarray)
         """
-        img = cv2.imread(self._imgpath(self._annopaths[index]))
+        imgpath = self._imgpath(self._annopaths[index])
         # pytorch's image order is rgb
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        _, ext = os.path.splitext(imgpath)
+        if ext == '.png':
+            img = cv2.imread(imgpath, cv2.IMREAD_UNCHANGED)
+            img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
+        elif ext == '.gif':
+            gif = cv2.VideoCapture(imgpath)
+            _, img = gif.read()
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        else:
+            img = cv2.imread(imgpath)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         return img.astype(np.float32)
 
     def _get_target(self, index):

@@ -65,6 +65,14 @@ conda install -c conda-forge shapely
 
 ![icdar-trained img](assets/train-icdar-result.png?raw=true "icdar-trained img")
 
+# Convert png to jpg for Born Digital Images
+
+```bash
+$ python png2jpg ~/data/text/Born-Digital-Images/Images/ -d
+Converting...	100.0%	[307/307]
+finished
+```
+
 # Reference
 
 [SynthText](https://www.robots.ox.ac.uk/~vgg/data/scenetext/)

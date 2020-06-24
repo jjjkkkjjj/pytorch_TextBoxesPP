@@ -117,12 +117,23 @@ def coverage_numpy(a, b, divide_b=False):
 
     # get a and b's area
     # area = (xmax - xmin) * (ymax - ymin)
+    """
+    >>> a = np.array([-1, 0, 1, 2, 3], dtype=float)
+    >>> b = np.array([ 0, 0, 0, 2, 2], dtype=float)
+    
+    # If you don't pass `out` the indices where (b == 0) will be uninitialized!
+    >>> c = np.divide(a, b, out=np.zeros_like(a), where=b!=0)
+    >>> print(c)
+    [ 0.   0.   0.   1.   1.5]
+    """
     if divide_b:
         B = (b[:, :, 2] - b[:, :, 0]) * (b[:, :, 3] - b[:, :, 1])
-        return intersectionArea / B
+        # return intersectionArea / B
+        return np.divide(intersectionArea, B, out=np.zeros_like(intersectionArea), where=B!=0)
     else:
         A = (a[:, :, 2] - a[:, :, 0]) * (a[:, :, 3] - a[:, :, 1])
-        return intersectionArea / A
+        #return intersectionArea / A
+        return np.divide(intersectionArea, A, out=np.zeros_like(intersectionArea), where=A!=0)
 
 
 # ref: https://github.com/MhLiao/TextBoxes_plusplus/blob/master/examples/text/nms.py
