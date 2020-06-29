@@ -5,18 +5,21 @@ from ssd_data._utils import _check_ins
 from ssd_data.target_transforms import *
 
 class Ignore(_Ignore):
-    supported_key = ['illegible', 'difficult']
+    supported_key = ['illegible', 'difficult', 'strange']
 
     def __init__(self, **kwargs):
         """
         :param kwargs: if true, specific keyword will be ignored
         """
         self.ignore_key = []
+        self.ignore_strange = False
         for key, val in kwargs.items():
             if key in Ignore.supported_key:
                 val = _check_ins(key, val, bool)
                 if not val:
                     logging.warning('No meaning: {}=False'.format(key))
+                elif key == 'strange':
+                    self.ignore_strange = True
                 else:
                     self.ignore_key += [key]
             else:
@@ -48,8 +51,11 @@ class Ignore(_Ignore):
             #if self._ignore_partial and flag['partial']:
             #    continue
             """
-            # normalize
             # bbox = [xmin, ymin, xmax, ymax]
+            if self.ignore_strange and (bbox[0] == bbox[2] or bbox[1] == bbox[3]):
+                # ignore strange bounding box (xmin == xmax or ymin == ymax)
+                continue
+
             ret_bboxes += [bbox]
             ret_labels += [label]
             ret_flags += [flag]

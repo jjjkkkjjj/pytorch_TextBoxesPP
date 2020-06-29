@@ -14,8 +14,10 @@ import torch
 
 if __name__ == '__main__':
 
-    augmentation = augmentations.RandomSampled()
-    #augmentation = None
+    #augmentation = augmentations.RandomSampled()
+    augmentation = None
+
+    ignore = target_transforms.Ignore(strange=True)
 
     transform = transforms.Compose(
         [transforms.Resize((384, 384)),
@@ -33,12 +35,15 @@ if __name__ == '__main__':
     #train_dataset = datasets.SynthTextDataset(ignore=None, transform=transform, target_transform=target_transform, augmentation=augmentation)
     #train_dataset = datasets.SynthTextDataset(ignore=None, transform=transform, target_transform=target_transform, augmentation=augmentation)
     #train_dataset = datasets.ICDAR2015TextDataset(ignore=None, transform=transform, target_transform=target_transform, augmentation=augmentation)
-    #train_dataset = datasets.ICDARFocusedSceneTextDataset(ignore=None, transform=transform, target_transform=target_transform, augmentation=augmentation)
-    train_dataset = datasets.ICDARBornDigitalTextDataset(ignore=None, transform=transform, target_transform=target_transform, augmentation=augmentation)
+    #train_dataset = datasets.ICDARFocusedSceneTextDataset(ignore=ignore, transform=transform, target_transform=target_transform, augmentation=augmentation)
+    #train_dataset = datasets.ICDARBornDigitalTextDataset(ignore=ignore, transform=transform, target_transform=target_transform, augmentation=augmentation)
 
+    train_dataset = datasets.Compose((datasets.ICDARFocusedSceneTextDataset, datasets.ICDARBornDigitalTextDataset),
+                                     ignore=ignore, transform=transform, target_transform=target_transform,
+                                     augmentation=augmentation)
 
     train_loader = DataLoader(train_dataset,
-                              batch_size=32,
+                              batch_size=16,
                               shuffle=True,
                               collate_fn=batch_ind_fn_droptexts,
                               num_workers=4,
@@ -49,11 +54,11 @@ if __name__ == '__main__':
     print(model)
     #model.load_weights('./weights/model_icdar15.pth')
 
-    optimizer = Adam(model.parameters(), lr=1e-4, weight_decay=5e-4)
+    optimizer = Adam(model.parameters(), lr=5e-4, weight_decay=5e-4)
     # iter_sheduler = SSDIterMultiStepLR(optimizer, milestones=(10, 20, 30), gamma=0.1, verbose=True)
     iter_sheduler = SSDIterStepLR(optimizer, step_size=60000, gamma=0.1, verbose=True)
 
-    save_manager = SaveManager(modelname='ssd300', interval=5000, max_checkpoints=3)
+    save_manager = SaveManager(modelname='test', interval=5000, max_checkpoints=3)
     log_manager = LogManager(interval=10, save_manager=save_manager, loss_interval=10, live_graph=None)
     trainer = TrainLogger(model, loss_func=TextBoxLoss(alpha=0.2), optimizer=optimizer, scheduler=iter_sheduler,
                           log_manager=log_manager)
